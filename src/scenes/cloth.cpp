@@ -1,0 +1,1 @@
+namespace scenes::cloth {}

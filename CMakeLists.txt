@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.24)
+project(dynamics LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+foreach(dependency raylib/src/raylib.h eigen/Eigen/Core imgui/imgui.h rlImGui/rlImGui.h)
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/${dependency}")
+        message(FATAL_ERROR "Initialize dependencies: git submodule update --init --depth 1")
+    endif()
+endforeach()
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(external/raylib EXCLUDE_FROM_ALL)
+add_library(imgui STATIC
+    external/imgui/imgui.cpp external/imgui/imgui_draw.cpp
+    external/imgui/imgui_tables.cpp external/imgui/imgui_widgets.cpp
+    external/rlImGui/rlImGui.cpp)
+target_include_directories(imgui SYSTEM PUBLIC external/imgui external/rlImGui)
+target_compile_definitions(imgui PRIVATE NO_FONT_AWESOME)
+target_link_libraries(imgui PUBLIC raylib)
+
+add_library(core STATIC core/xpbd.cpp core/vbd.cpp core/avbd.cpp core/pd.cpp)
+target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(core SYSTEM PUBLIC external/eigen)
+target_compile_options(core PRIVATE -Wall -Wextra -Wpedantic)
+
+foreach(scene spring pendulum)
+    add_executable(${scene} scenes/${scene}.cpp)
+    target_link_libraries(${scene} PRIVATE core imgui)
+    target_compile_options(${scene} PRIVATE -Wall -Wextra -Wpedantic)
+endforeach()
+
+include(CTest)
+if(BUILD_TESTING)
+    foreach(test spring pendulum spring_energy)
+        add_executable(${test}_tests tests/${test}_tests.cpp)
+        target_link_libraries(${test}_tests PRIVATE core)
+        target_compile_options(${test}_tests PRIVATE -Wall -Wextra -Wpedantic)
+        add_test(NAME ${test} COMMAND ${test}_tests)
+    endforeach()
+endif()

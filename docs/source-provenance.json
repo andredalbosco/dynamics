@@ -1,0 +1,23 @@
+{
+  "source": "/home/blacknoir/Projects/tiny-dynamics",
+  "note": "SHA-256 of source files at migration; includes the current uncommitted implementation.",
+  "files": {
+    "core/pd.hpp": "a5a300192ab4bb609c73f0e3f27b5dc63eecaa95a8c553c9d6dfd5f5d5a4355d",
+    "core/mpm.hpp": "e6ba9e5d7c6b7eb040d0ab0e78cbedf98931c8f5012df5489d964d77fdac18db",
+    "core/xpbd.hpp": "eb9b38b0020c4830b57ae1cc1be6f409bd93a2f03eae1b5884c16e29bd25ee26",
+    "core/core.hpp": "2d215c3395d88527db758fe706c2ada058885b5682fa83729fd974373950cfe2",
+    "core/xpbd_cuda.hpp": "49087ee1057772ee200a6f1f778a0cbad61acce072bef62fd3247fe20e5d3a15",
+    "core/bw.hpp": "bfc28547f6395c4d638840b1554d385a2797a6115df554b1640d479719e261f7",
+    "core/vbd.hpp": "64ab4f12ad4b2f3d4bd30b843b9edc8798b7725a1259f941c72e49d6e268353f",
+    "core/avbd.hpp": "d06f5c2f248a00b7c4729fcd08614d9f8fdf2195595dc23df1d0cb3144269777",
+    "core/xpbd_newton.hpp": "0284e20d2bfab2373cff4c71a4c4a5a7890dbe68c8d8e68aa44e75f574309066",
+    "core/pbd.hpp": "e1ab6289f47dc1096d31581860e72d469174f1b9e191b5cdc2486cd125aed551",
+    "scenes/mpm.cpp": "c2aa2eeb7ca11416e434bc172110d8ef46df9c05ae89f92a0a3df7f913d9a98e",
+    "scenes/scenes.hpp": "dc00d5fd570ff5706cbbce7788c8f73132cb11abe4920701a611449d7efa44a7",
+    "scenes/cloth.cpp": "9113a70a636b820a70f79c3c6a81b700b0b4de4b7153d624780d2a06f6b3d55b",
+    "solver_tests.cpp": "b351a3f4879dae4d0c60c4e28774c31c661272628fcbd5e4640485a6681b5e38",
+    "reference_tests.cpp": "05e3f0fa054b168ced06d3b3966eedfd408c37abce73d16f275933c71a63e02c",
+    "cuda_tests.cu": "804f873461a8598a320a75ef3dcce0bf08e61afaf7768486acabcfd43af6403b",
+    "references.md": "4b04173053a9781efbe2b543a43ccb5d7b95ac0270158cc4e4c13fab3e40e71e"
+  }
+}

@@ -2,6 +2,7 @@
 #include "core/vbd.hpp"
 #include "core/pd.hpp"
 #include "core/avbd.hpp"
+#include "core/bw.hpp"
 
 #include "raylib.h"
 #include "imgui.h"
@@ -32,7 +33,7 @@ void drawControls(bool& paused, bool& step, bool& reset, int& solver) {
         ImGui::SameLine();
         reset = ImGui::Button("Reset");
 
-        ImGui::Combo("Solver", &solver, "XPBD\0VBD\0PD\0AVBD\0");
+        ImGui::Combo("Solver", &solver, "XPBD\0VBD\0PD\0AVBD\0BW\0");
 
         ImGui::TextUnformatted("Space: pause   N: step   R: reset");
     }
@@ -96,6 +97,14 @@ int main() {
     avbd.substeps = spring.substeps;
     avbd.dt = dt;
 
+    bw::Solver bw;
+    for (const auto& p : initialParticles)
+        bw.particles.push_back({p.pos, p.prevPos, p.vel, p.invMass});
+    bw.energies = {{0, 1, 1, 1 / compliance}};
+    bw.gravity.setZero();
+    bw.substeps = spring.substeps;
+    bw.dt = dt;
+
     InitWindow(1600, 1000, "dynamics | spring");
     SetTargetFPS(60);
 
@@ -141,6 +150,7 @@ int main() {
                 const auto& p = initialParticles[i];
                 vbd.particles[i] = {p.pos, p.prevPos, p.vel, p.invMass};
                 avbd.particles[i] = {p.pos, p.prevPos, p.vel, p.invMass};
+                bw.particles[i] = {p.pos, p.prevPos, p.vel, p.invMass};
             }
             avbd.constraints = {{0, 1, 1, compliance}};
         }
@@ -149,6 +159,7 @@ int main() {
             vbd.step();
             pd.step();
             avbd.step();
+            bw.step();
         }
 
         // Draw
@@ -158,7 +169,8 @@ int main() {
         if (solver == 0) drawSpring(spring.particles[0].pos, spring.particles[1].pos);
         else if (solver == 1) drawSpring(vbd.particles[0].pos, vbd.particles[1].pos);
         else if (solver == 2) drawSpring(ps.pos.row(0).transpose(), ps.pos.row(1).transpose());
-        else drawSpring(avbd.particles[0].pos, avbd.particles[1].pos);
+        else if (solver == 3) drawSpring(avbd.particles[0].pos, avbd.particles[1].pos);
+        else drawSpring(bw.particles[0].pos, bw.particles[1].pos);
         EndMode3D();
 
         rlImGuiEnd();

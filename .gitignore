@@ -1,3 +1,5 @@
 /build*/
 /out/
 __pycache__/
+/benchmarks/xpbd_scatter_gather/benchmark
+/benchmarks/xpbd_scatter_gather/results/

@@ -2,6 +2,7 @@
 #include "core/vbd.hpp"
 #include "core/pd.hpp"
 #include "core/avbd.hpp"
+#include "core/bw.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -25,12 +26,18 @@ bool compareSolvers(double invMass, double initialVelocity) {
 
     vbd::Solver vbd;
     avbd::Solver avbd;
+    bw::Solver bw;
     for (const auto& p : xpbd.particles) {
         vbd.particles.push_back({p.pos, p.prevPos, p.vel, p.invMass});
         avbd.particles.push_back({p.pos, p.prevPos, p.vel, p.invMass});
+        bw.particles.push_back({p.pos, p.prevPos, p.vel, p.invMass});
     }
     vbd.energies = {{0, 1, 1, stiffness}};
     avbd.constraints = {{0, 1, 1, 1 / stiffness}};
+    bw.energies = {{0, 1, 1, stiffness}};
+    bw.gravity.setZero();
+    bw.substeps = substeps;
+    bw.dt = dt;
     vbd.gravity.setZero();
     avbd.gravity.setZero();
     vbd.substeps = avbd.substeps = substeps;
@@ -59,6 +66,7 @@ bool compareSolvers(double invMass, double initialVelocity) {
         vbd.step();
         pd.step();
         avbd.step();
+        bw.step();
 
         // Closed-form implicit-Euler oscillator, including its numerical damping.
         const int steps = frame * substeps;
@@ -66,18 +74,18 @@ bool compareSolvers(double invMass, double initialVelocity) {
         const double angle = steps * std::atan(h * omega);
         const double position = decay * (0.5 * std::cos(angle) + initialVelocity / omega * std::sin(angle));
         const double velocity = decay * (initialVelocity * std::cos(angle) - 0.5 * omega * std::sin(angle));
-        for (double x : {xpbd.particles[1].pos.x(), vbd.particles[1].pos.x(), ps.pos(1, 0), avbd.particles[1].pos.x()}) {
+        for (double x : {xpbd.particles[1].pos.x(), vbd.particles[1].pos.x(), ps.pos(1, 0), avbd.particles[1].pos.x(), bw.particles[1].pos.x()}) {
             if (!std::isfinite(x)) return false;
             positionError = std::max(positionError, std::abs(x - position));
             solverDifference = std::max(solverDifference, std::abs(x - ps.pos(1, 0)));
         }
         for (double v : {xpbd.particles[1].vel.x(),
-                vbd.particles[1].vel.x(), ps.vel(1, 0), avbd.particles[1].vel.x()}) {
+                vbd.particles[1].vel.x(), ps.vel(1, 0), avbd.particles[1].vel.x(), bw.particles[1].vel.x()}) {
             if (!std::isfinite(v)) return false;
             velocityError = std::max(velocityError, std::abs(v - velocity));
         }
         if (xpbd.particles[0].pos != anchor || vbd.particles[0].pos != anchor ||
-            ps.pos.row(0) != anchor.transpose() || avbd.particles[0].pos != anchor) return false;
+            ps.pos.row(0) != anchor.transpose() || avbd.particles[0].pos != anchor || bw.particles[0].pos != anchor) return false;
         const double time = frame * dt;
         continuousError = std::max(continuousError, std::abs(ps.pos(1, 0) -
             (0.5 * std::cos(omega * time) + initialVelocity / omega * std::sin(omega * time))));

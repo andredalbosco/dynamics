@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(dynamics LANGUAGES C CXX)
+if(APPLE)
+    project(dynamics LANGUAGES C CXX OBJCXX)
+else()
+    project(dynamics LANGUAGES C CXX)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,9 +35,19 @@ add_library(xpbd STATIC src/core/xpbd.cpp)
 target_include_directories(xpbd PUBLIC src/core)
 target_link_libraries(xpbd PUBLIC Eigen3::Eigen)
 
-add_executable(dynamics
-    src/main.cpp
-    src/scenes/cloth.cpp
-    src/scenes/pendulum.cpp
-)
-target_link_libraries(dynamics PRIVATE xpbd rlimgui)
+function(add_scene name)
+    add_executable(${name} src/scenes/${name}.cpp)
+    target_link_libraries(${name} PRIVATE xpbd rlimgui)
+endfunction()
+
+add_scene(cloth)
+add_scene(pendulum)
+
+enable_testing()
+add_executable(xpbd_tests tests/xpbd.cpp)
+target_link_libraries(xpbd_tests PRIVATE xpbd)
+add_test(NAME xpbd_tests COMMAND xpbd_tests)
+
+if(APPLE)
+    add_subdirectory(experiments/metal_vec_sum)
+endif()
